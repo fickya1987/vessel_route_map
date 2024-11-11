@@ -88,7 +88,7 @@ else:
     filtered_data = data  # Show all if no specific route selected
 
 # Map visualization with dashed lines and popup
-# Create a LineLayer with popup and dashed line effect
+# Create a PathLayer with dashed line effect and tooltip
 layer = pdk.Layer(
     "PathLayer",
     data=filtered_data,
@@ -99,16 +99,7 @@ layer = pdk.Layer(
     dash_size=0.2,
     get_dash_array=[1, 2],
     pickable=True,
-    auto_highlight=True,
-    tooltip_text=(
-        "<b>Vessel:</b> {Vessel}<br>"
-        "<b>Flag:</b> {Flag}<br>"
-        "<b>Departure:</b> {Departure}<br>"
-        "<b>Arrival:</b> {Arrival}<br>"
-        "<b>Type:</b> {Type}<br>"
-        "<b>Capacity - Max TEUs:</b> {Capacity - Max TEUs}<br>"
-        "<b>Capacity Max m3:</b> {Capacity Max m3}"
-    ),
+    auto_highlight=True
 )
 
 # Define the view centered on an approximate central location
@@ -119,27 +110,23 @@ view_state = pdk.ViewState(
     pitch=0,
 )
 
-# Render the map with pydeck
+# Render the map with pydeck and use tooltip for popup info
 st.pydeck_chart(pdk.Deck(
     layers=[layer],
     initial_view_state=view_state,
     tooltip={
-        "html": "<b>Vessel:</b> {Vessel}<br>"
-                "<b>Flag:</b> {Flag}<br>"
-                "<b>Departure:</b> {Departure}<br>"
-                "<b>Arrival:</b> {Arrival}<br>"
-                "<b>Type:</b> {Type}<br>"
-                "<b>Capacity - Max TEUs:</b> {Capacity - Max TEUs}<br>"
-                "<b>Capacity Max m3:</b> {Capacity Max m3}",
-        "style": {
-            "backgroundColor": "steelblue",
-            "color": "white",
-            "fontFamily": "Arial",
-            "fontSize": "14px",
-            "padding": "10px",
-            "borderRadius": "5px"
-        }
-    },
+        "html": """
+            <div style="background-color: steelblue; color: white; font-family: Arial; font-size: 14px; padding: 10px; border-radius: 5px">
+                <b>Vessel:</b> {Vessel}<br>
+                <b>Flag:</b> {Flag}<br>
+                <b>Departure:</b> {Departure}<br>
+                <b>Arrival:</b> {Arrival}<br>
+                <b>Type:</b> {Type}<br>
+                <b>Capacity - Max TEUs:</b> {Capacity - Max TEUs}<br>
+                <b>Capacity Max m3:</b> {Capacity Max m3}
+            </div>
+        """
+    }
 ))
 
 # Route Summary Statistics
