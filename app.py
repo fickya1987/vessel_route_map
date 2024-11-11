@@ -93,8 +93,8 @@ data['Route_Distance_km'] = data.apply(lambda row: geodesic(
 ).kilometers, axis=1)
 
 # Calculate total TEUs or m³ per day for each specified port
-teus_summary = data[data['Departure'].isin(['Priok', 'Perak', 'Belawan', 'Makassar'])].groupby('Departure')['TEUs'].sum()
-m3_summary = data[data['Departure'].isin(['Priok', 'Perak', 'Belawan', 'Makassar'])].groupby('Departure')['m3'].sum()
+teus_summary = data[data['Departure'].isin(['Priok', 'Perak', 'Belawan', 'Makassar'])].groupby('Departure')['Max TEUs'].sum()
+m3_summary = data[data['Departure'].isin(['Priok', 'Perak', 'Belawan', 'Makassar'])].groupby('Departure')['Bale or Grain (m3)'].sum()
 
 # Streamlit UI
 st.title("Geo Map of Departure and Arrival Routes")
