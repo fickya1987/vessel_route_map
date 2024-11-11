@@ -45,11 +45,30 @@ port_coordinates = {
     "Taboneo": {"lat": -4.2000, "lon": 114.5000},
     "Shantou (China)": {"lat": 23.3541, "lon": 116.6819},
     "Belawan": {"lat": 3.7766, "lon": 98.6832},
+    "Perak": {"lat": -7.2492, "lon": 112.7508},
+    # Add additional ports here as needed
+}
+
+# Define custom colors for specific ports
+port_colors = {
+    "Priok": [255, 0, 0],      # Red
+    "Perak": [0, 128, 0],      # Green
+    "Belawan": [0, 0, 255],    # Blue
+    "Makassar": [255, 165, 0]  # Orange
 }
 
 # Function to get coordinates or return None if not available
 def get_coordinates(port):
     return port_coordinates.get(port, {"lat": None, "lon": None})
+
+# Function to get line color based on departure or arrival port
+def get_line_color(departure, arrival):
+    if departure in port_colors:
+        return port_colors[departure]
+    elif arrival in port_colors:
+        return port_colors[arrival]
+    else:
+        return [128, 128, 128]  # Default grey color
 
 # Add coordinates to data
 data['Departure_Coords'] = data['Departure'].apply(get_coordinates)
@@ -64,8 +83,8 @@ data['Departure_lon'] = data['Departure_Coords'].apply(lambda x: x['lon'])
 data['Arrival_lat'] = data['Arrival_Coords'].apply(lambda x: x['lat'])
 data['Arrival_lon'] = data['Arrival_Coords'].apply(lambda x: x['lon'])
 
-# Remove any rows where coordinates are still missing
-data = data.dropna(subset=['Departure_lat', 'Departure_lon', 'Arrival_lat', 'Arrival_lon'])
+# Assign line color based on port
+data['Line_Color'] = data.apply(lambda row: get_line_color(row['Departure'], row['Arrival']), axis=1)
 
 # Calculate distances for valid coordinate pairs
 data['Route_Distance_km'] = data.apply(lambda row: geodesic(
@@ -73,8 +92,20 @@ data['Route_Distance_km'] = data.apply(lambda row: geodesic(
     (row['Arrival_lat'], row['Arrival_lon'])
 ).kilometers, axis=1)
 
+# Calculate total TEUs or m³ per day for each specified port
+teus_summary = data[data['Departure'].isin(['Priok', 'Perak', 'Belawan', 'Makassar'])].groupby('Departure')['TEUs'].sum()
+m3_summary = data[data['Departure'].isin(['Priok', 'Perak', 'Belawan', 'Makassar'])].groupby('Departure')['m3'].sum()
+
 # Streamlit UI
 st.title("Geo Map of Departure and Arrival Routes")
+
+# Display TEUs and m³ summary
+st.subheader("TEUs and m³ Summary per Day")
+st.write("**TEUs Summary (per day):**")
+st.write(teus_summary)
+
+st.write("**m³ Summary (per day):**")
+st.write(m3_summary)
 
 # Toggle option for showing all routes or a single selected route
 show_all_routes = st.checkbox("Show all routes", value=True)
@@ -100,7 +131,7 @@ layer = pdk.Layer(
     "PathLayer",
     data=filtered_data,
     get_path="[[Departure_lon, Departure_lat], [Arrival_lon, Arrival_lat]]",
-    get_color=[0, 102, 204],  # Custom blue color (RGB)
+    get_color="Line_Color",  # Set color based on the 'Line_Color' column
     width_min_pixels=6,  # Thicker line
     get_width=6,         # Thicker line
     dash_size=0.5,
@@ -116,6 +147,7 @@ view_state = pdk.ViewState(
     zoom=3,
     pitch=0,
 )
+
 
 # Render the map with pydeck and use tooltip for popup info
 st.pydeck_chart(pdk.Deck(
