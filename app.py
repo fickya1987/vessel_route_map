@@ -47,23 +47,27 @@ port_coordinates = {
     "Belawan": {"lat": 3.7766, "lon": 98.6832},
 }
 
-# Add coordinates to data based on port names
+# Function to get coordinates or return None if not available
 def get_coordinates(port):
     return port_coordinates.get(port, {"lat": None, "lon": None})
 
+# Add coordinates to data
 data['Departure_Coords'] = data['Departure'].apply(get_coordinates)
 data['Arrival_Coords'] = data['Arrival'].apply(get_coordinates)
 
 # Filter rows with available coordinates
 data = data.dropna(subset=['Departure_Coords', 'Arrival_Coords'])
 
-# Convert coordinates to columns
+# Convert coordinates to separate columns
 data['Departure_lat'] = data['Departure_Coords'].apply(lambda x: x['lat'])
 data['Departure_lon'] = data['Departure_Coords'].apply(lambda x: x['lon'])
 data['Arrival_lat'] = data['Arrival_Coords'].apply(lambda x: x['lat'])
 data['Arrival_lon'] = data['Arrival_Coords'].apply(lambda x: x['lon'])
 
-# Calculate distances using Haversine formula
+# Remove any rows where coordinates are still missing
+data = data.dropna(subset=['Departure_lat', 'Departure_lon', 'Arrival_lat', 'Arrival_lon'])
+
+# Calculate distances for valid coordinate pairs
 data['Route_Distance_km'] = data.apply(lambda row: geodesic(
     (row['Departure_lat'], row['Departure_lon']),
     (row['Arrival_lat'], row['Arrival_lon'])
