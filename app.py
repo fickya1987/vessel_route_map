@@ -94,20 +94,51 @@ else:
     else:
         filtered_data = data
 
-# Map visualization with dashed lines and popup
-# Create a PathLayer with dashed line effect and tooltip
+# Map visualization with customized dashed lines and popup
+# Create a PathLayer with thicker dashed line effect and tooltip
 layer = pdk.Layer(
     "PathLayer",
     data=filtered_data,
     get_path="[[Departure_lon, Departure_lat], [Arrival_lon, Arrival_lat]]",
-    get_color=[255, 0, 0],
-    width_min_pixels=4,
-    get_width=4,
-    dash_size=0.4,
-    get_dash_array=[0.1, 0.3],
+    get_color=[0, 102, 204],  # Custom blue color (RGB)
+    width_min_pixels=6,  # Thicker line
+    get_width=6,         # Thicker line
+    dash_size=0.5,
+    get_dash_array=[0.2, 0.4],  # Longer dashes
     pickable=True,
     auto_highlight=True
 )
+
+# Define the view centered on an approximate central location
+view_state = pdk.ViewState(
+    latitude=0.0,  # Adjust as needed for your data
+    longitude=110.0,  # Adjust as needed for your data
+    zoom=3,
+    pitch=0,
+)
+
+# Render the map with pydeck and use tooltip for popup info
+st.pydeck_chart(pdk.Deck(
+    layers=[layer],
+    initial_view_state=view_state,
+    tooltip={
+        "html": """
+            <div style="background-color: steelblue; color: white; font-family: Arial; font-size: 14px; padding: 10px; border-radius: 5px">
+                <b>Vessel:</b> {Vessel}<br>
+                <b>Flag:</b> {Flag}<br>
+                <b>Departure:</b> {Departure}<br>
+                <b>Arrival:</b> {Arrival}<br>
+                <b>Type:</b> {Type}<br>
+                <b>Capacity - Max TEUs:</b> {Capacity - Max TEUs}<br>
+                <b>Capacity Max m3:</b> {Capacity Max m3}
+            </div>
+        """
+    }
+))
+
+
+
+
 
 # Define the view centered on an approximate central location
 view_state = pdk.ViewState(
