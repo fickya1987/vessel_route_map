@@ -74,14 +74,14 @@ def get_line_color(departure, arrival):
 data['Departure_Coords'] = data['Departure'].apply(get_coordinates)
 data['Arrival_Coords'] = data['Arrival'].apply(get_coordinates)
 
-# Filter rows with available coordinates
-data = data.dropna(subset=['Departure_Coords', 'Arrival_Coords'])
-
 # Convert coordinates to separate columns
 data['Departure_lat'] = data['Departure_Coords'].apply(lambda x: x['lat'])
 data['Departure_lon'] = data['Departure_Coords'].apply(lambda x: x['lon'])
 data['Arrival_lat'] = data['Arrival_Coords'].apply(lambda x: x['lat'])
 data['Arrival_lon'] = data['Arrival_Coords'].apply(lambda x: x['lon'])
+
+# Filter out rows where any coordinate is missing
+data = data.dropna(subset=['Departure_lat', 'Departure_lon', 'Arrival_lat', 'Arrival_lon'])
 
 # Assign line color based on port
 data['Line_Color'] = data.apply(lambda row: get_line_color(row['Departure'], row['Arrival']), axis=1)
@@ -147,7 +147,6 @@ view_state = pdk.ViewState(
     zoom=3,
     pitch=0,
 )
-
 
 # Render the map with pydeck and use tooltip for popup info
 st.pydeck_chart(pdk.Deck(
