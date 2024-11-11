@@ -5,7 +5,7 @@ import pydeck as pdk
 # Load data
 data = pd.read_excel('Rute_pelabuhan_asal_tujuan_combined.xlsx')
 
-# Predefined coordinates for each port
+# Complete coordinates for each port
 port_coordinates = {
     "Samarinda": {"lat": -0.5022, "lon": 117.1536},
     "Priok": {"lat": -6.1045, "lon": 106.8805},
@@ -88,3 +88,25 @@ view_state = pdk.ViewState(
 
 # Render the map with pydeck
 st.pydeck_chart(pdk.Deck(layers=[layer], initial_view_state=view_state))
+
+# Route Summary Statistics
+st.subheader("Route Summary Statistics")
+
+# Most common departure and arrival ports
+most_common_departure = data['Departure'].value_counts().idxmax()
+most_common_arrival = data['Arrival'].value_counts().idxmax()
+total_routes = data.shape[0]
+unique_routes = data[['Departure', 'Arrival']].drop_duplicates().shape[0]
+
+# Display statistics
+st.write(f"**Total Routes:** {total_routes}")
+st.write(f"**Unique Routes:** {unique_routes}")
+st.write(f"**Most Common Departure Port:** {most_common_departure}")
+st.write(f"**Most Common Arrival Port:** {most_common_arrival}")
+
+# Show a breakdown of the top departure and arrival ports
+st.write("**Top Departure Ports:**")
+st.write(data['Departure'].value_counts().head())
+
+st.write("**Top Arrival Ports:**")
+st.write(data['Arrival'].value_counts().head())
