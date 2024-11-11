@@ -76,16 +76,23 @@ data['Route_Distance_km'] = data.apply(lambda row: geodesic(
 # Streamlit UI
 st.title("Geo Map of Departure and Arrival Routes")
 
-# Route Selection
-route_options = data[['Departure', 'Arrival']].drop_duplicates()
-selected_route = st.selectbox("Select a route to view", route_options.apply(lambda x: f"{x['Departure']} to {x['Arrival']}", axis=1))
+# Toggle option for showing all routes or a single selected route
+show_all_routes = st.checkbox("Show all routes", value=True)
 
-# Filter data based on selected route
-if selected_route:
-    departure, arrival = selected_route.split(" to ")
-    filtered_data = data[(data['Departure'] == departure) & (data['Arrival'] == arrival)]
+if show_all_routes:
+    # Show all routes
+    filtered_data = data
 else:
-    filtered_data = data  # Show all if no specific route selected
+    # Show a specific route based on user selection
+    route_options = data[['Departure', 'Arrival']].drop_duplicates()
+    selected_route = st.selectbox("Select a route to view", route_options.apply(lambda x: f"{x['Departure']} to {x['Arrival']}", axis=1))
+    
+    # Filter data based on selected route
+    if selected_route:
+        departure, arrival = selected_route.split(" to ")
+        filtered_data = data[(data['Departure'] == departure) & (data['Arrival'] == arrival)]
+    else:
+        filtered_data = data
 
 # Map visualization with dashed lines and popup
 # Create a PathLayer with dashed line effect and tooltip
@@ -96,8 +103,8 @@ layer = pdk.Layer(
     get_color=[255, 0, 0],
     width_min_pixels=4,
     get_width=4,
-    dash_size=0.2,
-    get_dash_array=[1, 2],
+    dash_size=0.4,
+    get_dash_array=[0.1, 0.3],
     pickable=True,
     auto_highlight=True
 )
