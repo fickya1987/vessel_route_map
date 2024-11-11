@@ -152,4 +152,25 @@ total_routes = data.shape[0]
 unique_routes = data[['Departure', 'Arrival']].drop_duplicates().shape[0]
 average_distance = data['Route_Distance_km'].mean()
 longest_route = data.loc[data['Route_Distance_km'].idxmax()]
-shortest_route = data.loc[data['Route_Distance_km'].idx
+shortest_route = data.loc[data['Route_Distance_km'].idxmin()]
+
+# Display statistics
+st.write(f"**Total Routes:** {total_routes}")
+st.write(f"**Unique Routes:** {unique_routes}")
+st.write(f"**Average Route Distance (km):** {average_distance:.2f}")
+st.write(f"**Longest Route:** {longest_route['Departure']} to {longest_route['Arrival']} ({longest_route['Route_Distance_km']:.2f} km)")
+st.write(f"**Shortest Route:** {shortest_route['Departure']} to {shortest_route['Arrival']} ({shortest_route['Route_Distance_km']:.2f} km)")
+st.write(f"**Most Common Departure Port:** {most_common_departure}")
+st.write(f"**Most Common Arrival Port:** {most_common_arrival}")
+
+# Show a breakdown of the top departure and arrival ports
+st.write("**Top Departure Ports:**")
+st.write(data['Departure'].value_counts().head())
+
+st.write("**Top Arrival Ports:**")
+st.write(data['Arrival'].value_counts().head())
+
+# Top 5 most frequent routes
+st.write("**Top 5 Most Frequent Routes:**")
+top_routes = data.groupby(['Departure', 'Arrival']).size().nlargest(5).reset_index(name='Frequency')
+st.write(top_routes)
