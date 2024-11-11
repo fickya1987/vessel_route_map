@@ -92,11 +92,11 @@ else:
 layer = pdk.Layer(
     "PathLayer",
     data=filtered_data,
-    get_path="[['Departure_lon', 'Departure_lat'], ['Arrival_lon', 'Arrival_lat']]",
+    get_path="[[Departure_lon, Departure_lat], [Arrival_lon, Arrival_lat]]",
     get_color=[255, 0, 0],
     width_min_pixels=4,
     get_width=4,
-    dash_size=0.2,
+    dash_size=0.5,
     get_dash_array=[1, 2],
     pickable=True,
     auto_highlight=True
