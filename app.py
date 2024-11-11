@@ -76,17 +76,39 @@ data['Route_Distance_km'] = data.apply(lambda row: geodesic(
 # Streamlit UI
 st.title("Geo Map of Departure and Arrival Routes")
 
-# Map visualization
-st.write("This map shows the departure and arrival routes of vessels between ports.")
+# Route Selection
+route_options = data[['Departure', 'Arrival']].drop_duplicates()
+selected_route = st.selectbox("Select a route to view", route_options.apply(lambda x: f"{x['Departure']} to {x['Arrival']}", axis=1))
 
-# Set up the pydeck layer for routes
+# Filter data based on selected route
+if selected_route:
+    departure, arrival = selected_route.split(" to ")
+    filtered_data = data[(data['Departure'] == departure) & (data['Arrival'] == arrival)]
+else:
+    filtered_data = data  # Show all if no specific route selected
+
+# Map visualization with dashed lines and popup
+# Create a LineLayer with popup and dashed line effect
 layer = pdk.Layer(
-    "LineLayer",
-    data=data,
-    get_source_position=["Departure_lon", "Departure_lat"],
-    get_target_position=["Arrival_lon", "Arrival_lat"],
+    "PathLayer",
+    data=filtered_data,
+    get_path="[['Departure_lon', 'Departure_lat'], ['Arrival_lon', 'Arrival_lat']]",
     get_color=[255, 0, 0],
-    get_width=5,
+    width_min_pixels=4,
+    get_width=4,
+    dash_size=0.2,
+    get_dash_array=[1, 2],
+    pickable=True,
+    auto_highlight=True,
+    tooltip_text=(
+        "<b>Vessel:</b> {Vessel}<br>"
+        "<b>Flag:</b> {Flag}<br>"
+        "<b>Departure:</b> {Departure}<br>"
+        "<b>Arrival:</b> {Arrival}<br>"
+        "<b>Type:</b> {Type}<br>"
+        "<b>Capacity - Max TEUs:</b> {Capacity - Max TEUs}<br>"
+        "<b>Capacity Max m3:</b> {Capacity Max m3}"
+    ),
 )
 
 # Define the view centered on an approximate central location
@@ -98,7 +120,27 @@ view_state = pdk.ViewState(
 )
 
 # Render the map with pydeck
-st.pydeck_chart(pdk.Deck(layers=[layer], initial_view_state=view_state))
+st.pydeck_chart(pdk.Deck(
+    layers=[layer],
+    initial_view_state=view_state,
+    tooltip={
+        "html": "<b>Vessel:</b> {Vessel}<br>"
+                "<b>Flag:</b> {Flag}<br>"
+                "<b>Departure:</b> {Departure}<br>"
+                "<b>Arrival:</b> {Arrival}<br>"
+                "<b>Type:</b> {Type}<br>"
+                "<b>Capacity - Max TEUs:</b> {Capacity - Max TEUs}<br>"
+                "<b>Capacity Max m3:</b> {Capacity Max m3}",
+        "style": {
+            "backgroundColor": "steelblue",
+            "color": "white",
+            "fontFamily": "Arial",
+            "fontSize": "14px",
+            "padding": "10px",
+            "borderRadius": "5px"
+        }
+    },
+))
 
 # Route Summary Statistics
 st.subheader("Route Summary Statistics")
@@ -110,25 +152,4 @@ total_routes = data.shape[0]
 unique_routes = data[['Departure', 'Arrival']].drop_duplicates().shape[0]
 average_distance = data['Route_Distance_km'].mean()
 longest_route = data.loc[data['Route_Distance_km'].idxmax()]
-shortest_route = data.loc[data['Route_Distance_km'].idxmin()]
-
-# Display statistics
-st.write(f"**Total Routes:** {total_routes}")
-st.write(f"**Unique Routes:** {unique_routes}")
-st.write(f"**Average Route Distance (km):** {average_distance:.2f}")
-st.write(f"**Longest Route:** {longest_route['Departure']} to {longest_route['Arrival']} ({longest_route['Route_Distance_km']:.2f} km)")
-st.write(f"**Shortest Route:** {shortest_route['Departure']} to {shortest_route['Arrival']} ({shortest_route['Route_Distance_km']:.2f} km)")
-st.write(f"**Most Common Departure Port:** {most_common_departure}")
-st.write(f"**Most Common Arrival Port:** {most_common_arrival}")
-
-# Show a breakdown of the top departure and arrival ports
-st.write("**Top Departure Ports:**")
-st.write(data['Departure'].value_counts().head())
-
-st.write("**Top Arrival Ports:**")
-st.write(data['Arrival'].value_counts().head())
-
-# Top 5 most frequent routes
-st.write("**Top 5 Most Frequent Routes:**")
-top_routes = data.groupby(['Departure', 'Arrival']).size().nlargest(5).reset_index(name='Frequency')
-st.write(top_routes)
+shortest_route = data.loc[data['Route_Distance_km'].idx
