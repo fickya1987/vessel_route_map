@@ -136,37 +136,6 @@ st.pydeck_chart(pdk.Deck(
     }
 ))
 
-
-
-
-
-# Define the view centered on an approximate central location
-view_state = pdk.ViewState(
-    latitude=0.0,  # Adjust as needed for your data
-    longitude=110.0,  # Adjust as needed for your data
-    zoom=3,
-    pitch=0,
-)
-
-# Render the map with pydeck and use tooltip for popup info
-st.pydeck_chart(pdk.Deck(
-    layers=[layer],
-    initial_view_state=view_state,
-    tooltip={
-        "html": """
-            <div style="background-color: steelblue; color: white; font-family: Arial; font-size: 14px; padding: 10px; border-radius: 5px">
-                <b>Vessel:</b> {Vessel}<br>
-                <b>Flag:</b> {Flag}<br>
-                <b>Departure:</b> {Departure}<br>
-                <b>Arrival:</b> {Arrival}<br>
-                <b>Type:</b> {Type}<br>
-                <b>Capacity - Max TEUs:</b> {Capacity - Max TEUs}<br>
-                <b>Capacity Max m3:</b> {Capacity Max m3}
-            </div>
-        """
-    }
-))
-
 # Route Summary Statistics
 st.subheader("Route Summary Statistics")
 
